@@ -4,25 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEXUS AI TRADE</title>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
-        body { margin: 0; background-color: #07080d; color: #e8eaed; }
+        /* 로딩 중 배경색 유지 */
+        body { margin: 0; background-color: #07080d; color: #e8eaed; overflow-x: hidden; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        // React Hook 추출
+        // React Hook 사용 설정
         const { useState, useEffect, useRef, useCallback } = React;
 
-        // --- 여기에 원본 JSX 내용을 넣었습니다 ---
+        // --- 제공된 JSX 코드 통합 시작 ---
         const FONTS = `
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
         `;
 
+        // 데이터 정의 (원본 유지)
         const KR_STOCKS = [
             { symbol: "005930", name: "삼성전자", price: 87400, change: 1.82, volume: "18.2M", market: "KR" },
             { symbol: "000660", name: "SK하이닉스", price: 178500, change: 3.21, volume: "5.8M", market: "KR" },
@@ -75,8 +77,9 @@
             return data;
         }
 
+        // 컴포넌트들 정의 (기존 JSX 로직 그대로)
         function MiniChart({ data, color, w = 120, h = 36 }) {
-            if (!data.length) return null;
+            if (!data || !data.length) return null;
             const min = Math.min(...data);
             const max = Math.max(...data);
             const range = max - min || 1;
@@ -89,7 +92,7 @@
         }
 
         function BigChart({ data, color }) {
-            if (!data.length) return null;
+            if (!data || !data.length) return null;
             const w = 600, h = 200;
             const min = Math.min(...data);
             const max = Math.max(...data);
@@ -131,37 +134,72 @@
 
             const getPrice = (s) => prices[s.symbol] || s.price;
 
+            // --- 원본 스타일 CSS 주입 ---
+            const mainStyles = `
+                .app { font-family: 'Noto Sans KR', sans-serif; background: #07080d; color: #e8eaed; min-height: 100vh; padding: 20px; }
+                .card { background: #0d0f17; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 15px; margin-bottom: 10px; }
+                .btn { padding: 8px 16px; border-radius: 20px; border: 1px solid #333; background: transparent; color: #fff; cursor: pointer; margin-right: 5px; }
+                .btn.active { background: #6c5ce7; border-color: #6c5ce7; }
+                .stock-row { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #1a1c26; cursor: pointer; }
+                .stock-row:hover { background: rgba(108,92,231,0.1); }
+                .up { color: #00e676; } .down { color: #ff3d57; }
+            `;
+
             return (
-                <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
-                    <style>{FONTS}</style>
-                    <header style={{ borderBottom: '1px solid #333', paddingBottom: '10px' }}>
-                        <h1 style={{ color: '#6c5ce7' }}>⚡ NEXUS AI TRADE</h1>
-                        <p>LIVE: {time.toLocaleTimeString()}</p>
+                <div className="app">
+                    <style>{FONTS}{mainStyles}</style>
+                    <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                        <h1 style={{ fontSize: '24px', background: 'linear-gradient(135deg, #6c5ce7, #00b8d9)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>⚡ NEXUS AI TRADE</h1>
+                        <div style={{ fontFamily: 'JetBrains Mono', fontSize: '14px' }}>{time.toLocaleTimeString()}</div>
                     </header>
-                    
-                    <div style={{ display: 'flex', gap: '10px', margin: '20px 0' }}>
-                        <button onClick={() => setMarket("KR")}>🇰🇷 한국</button>
-                        <button onClick={() => setMarket("US")}>🇺🇸 미국</button>
+
+                    <div style={{ marginBottom: '20px' }}>
+                        <button className={`btn ${market === "KR" ? "active" : ""}`} onClick={() => setMarket("KR")}>🇰🇷 한국 시장</button>
+                        <button className={`btn ${market === "US" ? "active" : ""}`} onClick={() => setMarket("US")}>🇺🇸 미국 시장</button>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '20px' }}>
-                        <div>
+                    <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth > 768 ? '350px 1fr' : '1fr', gap: '20px' }}>
+                        <div className="card">
+                            <h3 style={{ marginBottom: '15px', color: '#7a8194' }}>실시간 시세</h3>
                             {stocks.map(s => (
-                                <div key={s.symbol} onClick={() => setSelected(s)} style={{ padding: '10px', borderBottom: '1px solid #222', cursor: 'pointer' }}>
-                                    <strong>{s.name}</strong><br />
-                                    <span>{market === "KR" ? "₩" : "$"}{getPrice(s).toLocaleString()}</span>
+                                <div key={s.symbol} className="stock-row" onClick={() => setSelected(s)}>
+                                    <div>
+                                        <div style={{ fontWeight: 'bold' }}>{s.name}</div>
+                                        <div style={{ fontSize: '12px', color: '#7a8194' }}>{s.symbol}</div>
+                                    </div>
+                                    <div style={{ textAlign: 'right' }}>
+                                        <div style={{ fontFamily: 'JetBrains Mono' }}>{market === "KR" ? "₩" : "$"}{getPrice(s).toLocaleString()}</div>
+                                        <div className={s.change >= 0 ? "up" : "down"} style={{ fontSize: '12px' }}>{s.change >= 0 ? "+" : ""}{s.change}%</div>
+                                    </div>
                                 </div>
                             ))}
                         </div>
-                        <div style={{ background: '#141722', padding: '20px', borderRadius: '10px' }}>
+
+                        <div className="card">
                             {selected ? (
                                 <div>
-                                    <h2>{selected.name} ({selected.symbol})</h2>
-                                    <BigChart data={generateChartData(getPrice(selected))} color="#00e676" />
-                                    <p>현재가: {market === "KR" ? "₩" : "$"}{getPrice(selected).toLocaleString()}</p>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+                                        <h2>{selected.name} <span style={{ color: '#7a8194', fontSize: '16px' }}>{selected.symbol}</span></h2>
+                                        <div style={{ fontSize: '24px', fontWeight: 'bold' }} className={selected.change >= 0 ? "up" : "down"}>
+                                            {market === "KR" ? "₩" : "$"}{getPrice(selected).toLocaleString()}
+                                        </div>
+                                    </div>
+                                    <BigChart data={generateChartData(getPrice(selected))} color={selected.change >= 0 ? "#00e676" : "#ff3d57"} />
+                                    <div style={{ marginTop: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                                        <div style={{ background: '#141722', padding: '10px', borderRadius: '8px' }}>
+                                            <div style={{ fontSize: '11px', color: '#7a8194' }}>거래량</div>
+                                            <div>{selected.volume}</div>
+                                        </div>
+                                        <div style={{ background: '#141722', padding: '10px', borderRadius: '8px' }}>
+                                            <div style={{ fontSize: '11px', color: '#7a8194' }}>상태</div>
+                                            <div className="up">정상거래</div>
+                                        </div>
+                                    </div>
                                 </div>
                             ) : (
-                                <p>종목을 선택해 주세요.</p>
+                                <div style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#7a8194' }}>
+                                    왼쪽 목록에서 종목을 선택하여 차트를 확인하세요.
+                                </div>
                             )}
                         </div>
                     </div>
@@ -169,6 +207,7 @@
             );
         }
 
+        // 렌더링 실행부
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<StockTradingAI />);
     </script>
