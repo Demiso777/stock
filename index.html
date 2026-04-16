@@ -7,30 +7,168 @@
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { margin: 0; background-color: #07080d; color: #e8eaed; }
+    </style>
 </head>
-<body style="margin:0; background:#07080d;">
+<body>
     <div id="root"></div>
+
     <script type="text/babel">
-        // 1. 제공해주신 JSX 코드의 핵심 부분 (import 제외)
+        // React Hook 추출
         const { useState, useEffect, useRef, useCallback } = React;
 
-        // --- 여기에 주셨던 JSX 파일의 내용을 그대로 붙여넣습니다 ---
-        // (가독성을 위해 핵심 로직만 표시, 실제로는 파일 전체 내용을 넣으시면 됩니다)
-        
+        // --- 여기에 원본 JSX 내용을 넣었습니다 ---
         const FONTS = `
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
         `;
 
-        // ... (주신 모든 데이터와 함수들: KR_STOCKS, INDICES, MiniChart 등 전부 포함) ...
+        const KR_STOCKS = [
+            { symbol: "005930", name: "삼성전자", price: 87400, change: 1.82, volume: "18.2M", market: "KR" },
+            { symbol: "000660", name: "SK하이닉스", price: 178500, change: 3.21, volume: "5.8M", market: "KR" },
+            { symbol: "035720", name: "카카오", price: 42350, change: -1.05, volume: "3.1M", market: "KR" },
+            { symbol: "035420", name: "NAVER", price: 198000, change: 0.76, volume: "1.2M", market: "KR" },
+            { symbol: "051910", name: "LG화학", price: 312000, change: -2.33, volume: "0.8M", market: "KR" },
+            { symbol: "006400", name: "삼성SDI", price: 385000, change: 1.12, volume: "0.5M", market: "KR" },
+            { symbol: "068270", name: "셀트리온", price: 176500, change: 0.57, volume: "1.4M", market: "KR" },
+            { symbol: "105560", name: "KB금융", price: 82300, change: -0.48, volume: "2.1M", market: "KR" },
+        ];
 
-        function StockTradingAI() {
-            // ... (주신 컴포넌트 내부 로직 전체) ...
+        const US_STOCKS = [
+            { symbol: "AAPL", name: "Apple Inc.", price: 198.45, change: 1.23, volume: "52.3M", market: "US" },
+            { symbol: "NVDA", name: "NVIDIA Corp.", price: 142.78, change: 4.56, volume: "98.1M", market: "US" },
+            { symbol: "TSLA", name: "Tesla Inc.", price: 267.30, change: -2.14, volume: "71.5M", market: "US" },
+            { symbol: "MSFT", name: "Microsoft", price: 438.20, change: 0.89, volume: "22.4M", market: "US" },
+            { symbol: "GOOGL", name: "Alphabet", price: 176.55, change: 1.67, volume: "18.7M", market: "US" },
+            { symbol: "AMZN", name: "Amazon", price: 197.80, change: 2.31, volume: "35.2M", market: "US" },
+            { symbol: "META", name: "Meta", price: 512.40, change: -0.92, volume: "14.8M", market: "US" },
+            { symbol: "AMD", name: "AMD", price: 164.90, change: 3.78, volume: "42.6M", market: "US" },
+        ];
+
+        const KR_ETFS = [
+            { symbol: "069500", name: "KODEX 200", price: 35420, change: 0.87, volume: "12.5M", market: "KR", type: "ETF", category: "지수", nav: 35380, expense: "0.15%", holdings: "KOSPI 200 추종" },
+            { symbol: "252670", name: "KODEX 200선물인버스2X", price: 2185, change: -1.92, volume: "85.3M", market: "KR", type: "ETF", category: "레버리지", nav: 2190, expense: "0.64%", holdings: "KOSPI 200 인버스 2배" },
+            { symbol: "122630", name: "KODEX 레버리지", price: 18740, change: 1.75, volume: "32.1M", market: "KR", type: "ETF", category: "레버리지", nav: 18720, expense: "0.64%", holdings: "KOSPI 200 2배" },
+            { symbol: "371460", name: "TIGER 차이나전기차SOLACTIVE", price: 8950, change: 2.34, volume: "8.7M", market: "KR", type: "ETF", category: "해외", nav: 8930, expense: "0.49%", holdings: "중국 전기차 관련주" },
+            { symbol: "381180", name: "TIGER 미국테크TOP10 INDXX", price: 14280, change: 1.56, volume: "6.2M", market: "KR", type: "ETF", category: "해외", nav: 14260, expense: "0.49%", holdings: "미국 빅테크 10종목" },
+        ];
+
+        const US_ETFS = [
+            { symbol: "SPY", name: "SPDR S&P 500 ETF", price: 589.21, change: 0.67, volume: "68.4M", market: "US", type: "ETF", category: "Index", nav: 589.05, expense: "0.09%", holdings: "S&P 500 추종" },
+            { symbol: "QQQ", name: "Invesco QQQ Trust", price: 505.83, change: 1.24, volume: "42.1M", market: "US", type: "ETF", category: "Index", nav: 505.70, expense: "0.20%", holdings: "NASDAQ 100 추종" },
+        ];
+
+        const INDICES = [
+            { name: "KOSPI", value: 2734.82, change: 0.94 },
+            { name: "KOSDAQ", value: 891.45, change: 1.32 },
+            { name: "S&P 500", value: 5892.14, change: 0.67 },
+            { name: "NASDAQ", value: 19245.67, change: 1.15 },
+        ];
+
+        function generateChartData(base, points = 60) {
+            const data = [];
+            let v = base;
+            for (let i = 0; i < points; i++) {
+                v += (Math.random() - 0.48) * base * 0.008;
+                data.push(v);
+            }
+            return data;
+        }
+
+        function MiniChart({ data, color, w = 120, h = 36 }) {
+            if (!data.length) return null;
+            const min = Math.min(...data);
+            const max = Math.max(...data);
+            const range = max - min || 1;
+            const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - ((v - min) / range) * h}`).join(" ");
             return (
-                // ... (주신 리턴문 전체) ...
+                <svg width={w} height={h} style={{ display: "block" }}>
+                    <polyline points={pts} fill="none" stroke={color} strokeWidth="1.5" />
+                </svg>
             );
         }
 
-        // 2. 브라우저 렌더링 실행부 (이 부분이 꼭 있어야 화면에 나옵니다)
+        function BigChart({ data, color }) {
+            if (!data.length) return null;
+            const w = 600, h = 200;
+            const min = Math.min(...data);
+            const max = Math.max(...data);
+            const range = max - min || 1;
+            const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - ((v - min) / range) * (h - 20) - 10}`).join(" ");
+            return (
+                <svg viewBox={`0 0 ${w} ${h}`} style={{ width: "100%", height: "200px", display: "block" }}>
+                    <polyline points={pts} fill="none" stroke={color} strokeWidth="2" />
+                </svg>
+            );
+        }
+
+        function StockTradingAI() {
+            const [market, setMarket] = useState("KR");
+            const [assetType, setAssetType] = useState("stock");
+            const [selected, setSelected] = useState(null);
+            const [tab, setTab] = useState("market");
+            const [prices, setPrices] = useState({});
+            const [time, setTime] = useState(new Date());
+
+            const stocks = assetType === "etf"
+                ? (market === "KR" ? KR_ETFS : US_ETFS)
+                : (market === "KR" ? KR_STOCKS : US_STOCKS);
+
+            useEffect(() => {
+                const iv = setInterval(() => {
+                    setTime(new Date());
+                    setPrices(prev => {
+                        const next = { ...prev };
+                        [...KR_STOCKS, ...US_STOCKS, ...KR_ETFS, ...US_ETFS].forEach(s => {
+                            const base = prev[s.symbol] || s.price;
+                            next[s.symbol] = +(base + (Math.random() - 0.49) * base * 0.002).toFixed(2);
+                        });
+                        return next;
+                    });
+                }, 2000);
+                return () => clearInterval(iv);
+            }, []);
+
+            const getPrice = (s) => prices[s.symbol] || s.price;
+
+            return (
+                <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
+                    <style>{FONTS}</style>
+                    <header style={{ borderBottom: '1px solid #333', paddingBottom: '10px' }}>
+                        <h1 style={{ color: '#6c5ce7' }}>⚡ NEXUS AI TRADE</h1>
+                        <p>LIVE: {time.toLocaleTimeString()}</p>
+                    </header>
+                    
+                    <div style={{ display: 'flex', gap: '10px', margin: '20px 0' }}>
+                        <button onClick={() => setMarket("KR")}>🇰🇷 한국</button>
+                        <button onClick={() => setMarket("US")}>🇺🇸 미국</button>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '20px' }}>
+                        <div>
+                            {stocks.map(s => (
+                                <div key={s.symbol} onClick={() => setSelected(s)} style={{ padding: '10px', borderBottom: '1px solid #222', cursor: 'pointer' }}>
+                                    <strong>{s.name}</strong><br />
+                                    <span>{market === "KR" ? "₩" : "$"}{getPrice(s).toLocaleString()}</span>
+                                </div>
+                            ))}
+                        </div>
+                        <div style={{ background: '#141722', padding: '20px', borderRadius: '10px' }}>
+                            {selected ? (
+                                <div>
+                                    <h2>{selected.name} ({selected.symbol})</h2>
+                                    <BigChart data={generateChartData(getPrice(selected))} color="#00e676" />
+                                    <p>현재가: {market === "KR" ? "₩" : "$"}{getPrice(selected).toLocaleString()}</p>
+                                </div>
+                            ) : (
+                                <p>종목을 선택해 주세요.</p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<StockTradingAI />);
     </script>
