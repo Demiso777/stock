@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS AI TRADE</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body style="margin:0; background:#07080d;">
+    <div id="root"></div>
+    <script type="text/babel">
+        // 1. 제공해주신 JSX 코드의 핵심 부분 (import 제외)
+        const { useState, useEffect, useRef, useCallback } = React;
+
+        // --- 여기에 주셨던 JSX 파일의 내용을 그대로 붙여넣습니다 ---
+        // (가독성을 위해 핵심 로직만 표시, 실제로는 파일 전체 내용을 넣으시면 됩니다)
+        
+        const FONTS = `
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+        `;
+
+        // ... (주신 모든 데이터와 함수들: KR_STOCKS, INDICES, MiniChart 등 전부 포함) ...
+
+        function StockTradingAI() {
+            // ... (주신 컴포넌트 내부 로직 전체) ...
+            return (
+                // ... (주신 리턴문 전체) ...
+            );
+        }
+
+        // 2. 브라우저 렌더링 실행부 (이 부분이 꼭 있어야 화면에 나옵니다)
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<StockTradingAI />);
+    </script>
+</body>
+</html>
